@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.networkmonitor.data.repository.NetworkRepository
 import com.example.networkmonitor.domain.model.ConnectionLog
@@ -31,6 +32,19 @@ class MainViewModel(
 
     fun clearLogs() {
         repository.clearLogs()
+    }
+
+    companion object {
+        fun factory(repository: NetworkRepository): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+                        return MainViewModel(repository) as T
+                    }
+                    throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+                }
+            }
     }
 }
 
