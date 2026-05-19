@@ -8,7 +8,7 @@
         android:name=".NetworkMonitorApp"
         android:allowBackup="true"
         android:icon="@android:drawable/stat_notify_sync_noanim"
-        android:label="Network Monitor"
+        android:label="@string/app_name"
         android:roundIcon="@android:drawable/stat_notify_sync_noanim"
         android:supportsRtl="true"
         android:theme="@style/Theme.NetworkMonitor">
