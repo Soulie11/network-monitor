@@ -20,7 +20,7 @@ class NetworkStatusTracker(context: Context) {
         val callback = object : ConnectivityManager.NetworkCallback() {
 
             override fun onAvailable(network: Network) {
-                trySend(currentConnectionLog(ConnectionState.AVAILABLE))
+                trySend(currentConnectionLog())
             }
 
             override fun onCapabilitiesChanged(
@@ -43,13 +43,7 @@ class NetworkStatusTracker(context: Context) {
             }
 
             override fun onLost(network: Network) {
-                val activeNetwork = connectivityManager.activeNetwork
-                val state = if (activeNetwork == null) {
-                    ConnectionState.LOST
-                } else {
-                    ConnectionState.AVAILABLE
-                }
-                trySend(currentConnectionLog(state))
+                trySend(currentConnectionLog(ConnectionState.LOST))
             }
 
             override fun onUnavailable() {
@@ -67,7 +61,7 @@ class NetworkStatusTracker(context: Context) {
     }
 
     private fun currentConnectionLog(
-        fallbackState: ConnectionState = ConnectionState.UNAVAILABLE
+        eventState: ConnectionState? = null
     ): ConnectionLog {
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
@@ -76,9 +70,10 @@ class NetworkStatusTracker(context: Context) {
             capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
 
         val finalState = when {
-            activeNetwork == null -> ConnectionState.UNAVAILABLE
+            activeNetwork == null -> eventState ?: ConnectionState.UNAVAILABLE
+            eventState == ConnectionState.LOSING -> ConnectionState.LOSING
             isValidated -> ConnectionState.AVAILABLE
-            else -> fallbackState
+            else -> ConnectionState.UNAVAILABLE
         }
 
         return ConnectionLog(
@@ -96,6 +91,7 @@ class NetworkStatusTracker(context: Context) {
             hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Dane komórkowe"
             hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
             hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> "Bluetooth"
+            hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN"
             else -> "Inne"
         }
     }

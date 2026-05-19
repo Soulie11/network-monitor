@@ -20,10 +20,15 @@ class MainViewModel(
 
     init {
         repository.startMonitoring()
+        repository.currentLog
+            .onEach { currentLog ->
+                uiState = uiState.copy(currentLog = currentLog)
+            }
+            .launchIn(viewModelScope)
+
         repository.logs
             .onEach { logs ->
                 uiState = uiState.copy(
-                    currentLog = logs.firstOrNull(),
                     logs = logs
                 )
             }
